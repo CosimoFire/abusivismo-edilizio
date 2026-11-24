@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Il mattone perdonato – Radar QN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,700&display=swap">
+<link rel="stylesheet" href="../assets/radar.css">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="../assets/radar.js"></script>
+<style>
+.tl-filters{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
+.tl-pill{font:600 12px/1 var(--sans);color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:999px;padding:7px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.tl-pill i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.tl-pill[aria-pressed="false"]{color:var(--ink-2);opacity:.55}
+.tl-pill:focus-visible,.tl-item:focus-visible,.tl-dot:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.tl-strip{margin-top:22px}
+.tl-strip svg{display:block;overflow:visible}
+.tl-dot{cursor:pointer;transition:opacity 120ms}
+.tl-list{list-style:none;margin:26px 0 0;padding:0;position:relative}
+.tl-list::before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:1.5px;background:var(--rule)}
+.tl-item{position:relative;padding:0 0 26px 30px;cursor:pointer;transition:opacity 150ms}
+.tl-item::before{content:"";position:absolute;left:0;top:7px;width:11px;height:11px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px var(--bg)}
+.tl-item.is-hidden{display:none}
+.tl-year{font:700 13px/1 var(--sans);color:var(--c);letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.tl-t{font:700 21px/1.15 var(--serif);color:var(--ink);margin:5px 0 0}
+.tl-n{font:600 12.5px/1.35 var(--sans);color:var(--ink-2);margin:5px 0 0}
+.tl-d{font:400 14px/1.45 var(--sans);color:var(--ink);margin:6px 0 0;max-width:560px}
+.tl-item.is-on .tl-t{text-decoration:underline;text-decoration-color:var(--c);text-decoration-thickness:2px;text-underline-offset:4px}
+.tl-item{opacity:0;transform:translateY(8px)}
+.tl-ready .tl-item{opacity:1;transform:none;transition:opacity 450ms ease var(--lag),transform 450ms ease var(--lag)}
+.tl-ready .tl-item.is-dim{opacity:.3}
+@media (prefers-reduced-motion:reduce){.tl-item{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<main class="radar">
+  <header>
+    <h1 class="r-title">Il mattone perdonato</h1>
+    <p class="r-sub">La storia dei condoni edilizi in Italia, 1942-2024</p>
+  </header>
+
+  <div class="tl-filters" id="filters" role="group" aria-label="Filtra per tipo di norma"></div>
+  <div class="tl-strip" id="strip"></div>
+  <ol class="tl-list" id="list"></ol>
+
+  <p class="r-note">Cronologia selettiva, aggiornata al 2024. Nell'elenco gli intervalli non sono proporzionali al tempo; lo sono nella linea in alto. Clicca su una norma o su un punto per evidenziarla.</p>
+
+  <footer class="r-foot">
+    <span>Fonte: Normattiva (leggi e decreti citati); Corte costituzionale, sentenza 196/2004</span>
+    <span>Elaborazione Radar – QN</span>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var R = Radar;
+  var CATS = [
+    { k: "Condoni nazionali", c: "var(--red)" },
+    { k: "Misure speciali", c: "var(--blue)" },
+    { k: "Evoluzione normativa", c: "var(--grey)" }
+  ];
+  var col = {}; CATS.forEach(function (c) { col[c.k] = c.c; });
+
+  R.loadCSV("../data/condoni.csv").then(function (rows) {
+    var data = rows.map(function (r) {
+      return { y: +r["Anno"], t: r["Titolo"], n: r["Norma"], d: r["Descrizione"], c: r["Categoria"] };
+    }).sort(function (a, b) { return a.y - b.y; });
+    var on = {}; CATS.forEach(function (c) { on[c.k] = true; });
+    var active = null, dots = null;
+    function toggle(d) { active = active === d ? null : d; update(); }
+
+    var fl = d3.select("#filters");
+    fl.selectAll("button").data(CATS).join("button").attr("class", "tl-pill").attr("type", "button")
+      .attr("aria-pressed", "true")
+      .html(function (c) { return '<i style="background:' + c.c + '"></i>' + c.k; })
+      .on("click", function (ev, c) {
+        on[c.k] = !on[c.k];
+        if (!Object.keys(on).some(function (k) { return on[k]; })) on[c.k] = true;
+        fl.selectAll("button").attr("aria-pressed", function (d) { return String(on[d.k]); });
+        if (active && !on[active.c]) active = null;
+        update();
+      });
+
+    var items = d3.select("#list").selectAll("li").data(data).join("li")
+      .attr("class", "tl-item").attr("tabindex", 0)
+      .style("--c", function (d) { return col[d.c]; })
+      .style("--lag", function (d, i) { return i * 60 + "ms"; })
+      .html(function (d) {
+        return '<div class="tl-year">' + d.y + '</div><h2 class="tl-t">' + d.t + '</h2><div class="tl-n">' + d.n + '</div><p class="tl-d">' + d.d + "</p>";
+      })
+      .on("click", function (ev, d) { toggle(d); })
+      .on("keydown", function (ev, d) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggle(d); } });
+
+    var host = document.getElementById("strip");
+    var svg = d3.select(host).append("svg").attr("role", "img")
+      .attr("aria-label", "Linea del tempo dal 1942 al 2024 con " + data.length + " norme: tre condoni nazionali (1985, 1994, 2003), due misure speciali e sei interventi di riordino.");
+    R.responsive(host, function (W, phase) {
+      var narrow = R.isNarrow(W), H = 56, m = { l: 8, r: 8 };
+      svg.attr("width", W).attr("height", H);
+      svg.selectAll("*").remove();
+      var x = d3.scaleLinear().domain([1942, 2024]).range([m.l, W - m.r]);
+      svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", 24).attr("y2", 24).style("stroke", "var(--rule)").style("stroke-width", 1.5);
+      var ticks = narrow ? [1942, 1985, 2024] : [1942, 1960, 1980, 2000, 2024];
+      svg.selectAll("text.tk").data(ticks).join("text").attr("class", "tk")
+        .attr("x", function (d) { return x(d); }).attr("y", 52)
+        .attr("text-anchor", function (d, i) { return i === 0 ? "start" : i === ticks.length - 1 ? "end" : "middle"; })
+        .style("fill", "var(--ink-2)").style("font-size", "11px").text(function (d) { return d; });
+      dots = svg.selectAll("circle").data(data).join("circle").attr("class", "tl-dot")
+        .attr("cx", function (d) { return x(d.y); }).attr("cy", 24)
+        .attr("r", function (d) { return d.c === "Condoni nazionali" ? 7 : 5.5; })
+        .style("fill", function (d) { return col[d.c]; }).style("stroke", "var(--bg)").style("stroke-width", 2)
+        .attr("tabindex", 0).attr("role", "button").attr("aria-label", function (d) { return d.y + ": " + d.t; })
+        .on("click", function (ev, d) { toggle(d); })
+        .on("keydown", function (ev, d) { if (ev.key === "Enter") toggle(d); });
+      dots.append("title").text(function (d) { return d.y + " – " + d.t; });
+      svg.append("text").attr("class", "tl-lab").attr("y", 8).style("fill", "var(--ink)").style("font-size", "12px").style("font-weight", 700);
+      update();
+      if (phase === "pre") dots.style("opacity", 0);
+      if (phase === "play") dots.style("opacity", 0).transition().delay(function (d, i) { return i * 50; }).duration(R.DUR * 0.6).style("opacity", function (d) { return dotOp(d); });
+    });
+
+    function dotOp(d) { return !on[d.c] ? 0.12 : (active && d !== active ? 0.3 : 1); }
+    function update() {
+      items.classed("is-hidden", function (d) { return !on[d.c]; })
+        .classed("is-on", function (d) { return d === active; })
+        .classed("is-dim", function (d) { return !!active && d !== active; });
+      if (dots) {
+        dots.style("opacity", dotOp);
+        var lab = svg.select(".tl-lab");
+        if (active) {
+          var cx = +dots.filter(function (d) { return d === active; }).attr("cx"), W = +svg.attr("width");
+          lab.text(active.y).attr("x", cx).attr("text-anchor", cx < 24 ? "start" : cx > W - 24 ? "end" : "middle");
+        } else lab.text("");
+      }
+      R.scheduleHeight();
+    }
+
+    function ready() { document.getElementById("list").classList.add("tl-ready"); R.scheduleHeight(); }
+    if (R.reduced) ready(); else R.onFirstView(document.getElementById("list"), ready);
+  }).catch(function (e) { R.fail(document.getElementById("list"), e); });
+})();
+</script>
+</body>
+</html>

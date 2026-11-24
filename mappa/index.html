@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abusivismo edilizio per regione – Radar QN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,700&display=swap">
+<link rel="stylesheet" href="../assets/radar.css">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="../assets/radar.js"></script>
+</head>
+<body>
+<main class="radar">
+  <header>
+    <h1 class="r-title">L'abusivismo edilizio resta un fatto del Sud</h1>
+    <p class="r-sub">Abitazioni abusive ogni 100 autorizzate dai Comuni, per regione, 2022</p>
+  </header>
+
+  <div class="r-big" id="big" aria-hidden="true">
+    <span class="r-big__num" id="big-num">&nbsp;</span>
+    <span class="r-big__label" id="big-label"></span>
+  </div>
+
+  <figure class="r-chart" id="map">
+    <p class="r-chart__head">Costruzioni abusive per 100 autorizzate</p>
+    <div class="r-key" id="key" style="margin:0 0 6px"></div>
+  </figure>
+
+  <p class="r-note" id="note"></p>
+
+  <footer class="r-foot">
+    <span>Fonte: Istat, Indicatori Bes (Paesaggio e patrimonio culturale)</span>
+    <span>Elaborazione Radar – QN</span>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var R = Radar, fmt = R.fmt;
+  // classi: soglia superiore (esclusa), colore. L'ultima classe, la più grave, è l'unica in rosso.
+  var CLASSES = [
+    { max: 5,        col: "var(--blue-5)", lab: "meno di 5" },
+    { max: 15,       col: "var(--blue-4)", lab: "5–15" },
+    { max: 30,       col: "var(--blue-3)", lab: "15–30" },
+    { max: 45,       col: "var(--blue-2)", lab: "30–45" },
+    { max: Infinity, col: "var(--red)",    lab: "oltre 45" }
+  ];
+  function cls(v) { for (var i = 0; i < CLASSES.length; i++) if (v < CLASSES[i].max) return CLASSES[i]; }
+  var f1 = function (v) { return fmt(v, 1); };
+
+  Promise.all([R.loadCSV("../data/abusivismo-regioni.csv"), d3.json("../data/regioni-semplice.geojson")]).then(function (res) {
+    var rows = res[0].map(function (r) {
+      return { code: r["Codice"], name: r["Regione"], v: R.num(r["Abusivismo 2022"]), group: r["Valore riferito a"] };
+    });
+    var italia = rows.find(function (r) { return r.code === "00"; });
+    var regs = rows.filter(function (r) { return r.code !== "00"; });
+    var byCode = {}; regs.forEach(function (r) { byCode[r.code] = r; });
+    var geo = res[1];
+    var top = regs.slice().sort(function (a, b) { return b.v - a.v; });
+    var nHigh = regs.filter(function (r) { return r.v >= 45; }).length;
+    var south = regs.filter(function (r) { return +r.code >= 15; });
+    var minSouth = d3.min(south, function (r) { return r.v; });
+    var maxNorth = d3.max(regs.filter(function (r) { return +r.code <= 8; }), function (r) { return r.v; });
+
+    // ---- Big number ----
+    var bigNum = d3.select("#big-num");
+    d3.select("#big-label").text("abitazioni abusive ogni 100 autorizzate in Italia: in Basilicata e Calabria sono " + fmt(top[0].v, 0) + ", nelle regioni del Nord non più di " + fmt(maxNorth, 1));
+    if (R.reduced) bigNum.text(f1(italia.v));
+    else { bigNum.text(f1(0)); R.onFirstView(document.getElementById("big"), function () { R.countUp(bigNum, italia.v, f1, "play"); }); }
+
+    d3.select("#note").text("Valori di Piemonte e Valle d'Aosta, Trentino-Alto Adige e Friuli-Venezia Giulia, Umbria e Marche, Abruzzo e Molise, Basilicata e Calabria sono riferiti all'insieme delle due regioni. L'Istat ha interrotto l'aggiornamento dell'indicatore dopo il 2022.");
+
+    var host = document.getElementById("map");
+    var tip = R.tooltip(host);
+    var clear = function () {};
+    R.dismissOutside(host, function () { tip.hide(); clear(); });
+
+    d3.select("#key").html(CLASSES.map(function (c) {
+      return '<span><i class="sw" style="background:' + c.col + '"></i>' + c.lab + "</span>";
+    }).join(""));
+
+    var svg = d3.select(host).append("svg").attr("role", "img");
+    svg.append("title").text("Mappa delle regioni italiane per abitazioni abusive ogni 100 autorizzate nel 2022. Il valore più alto è " + fmt(top[0].v, 1) + " in Basilicata e Calabria, il più basso " + fmt(d3.min(regs, function (r) { return r.v; }), 1) + " in Trentino-Alto Adige e Friuli-Venezia Giulia; " + nHigh + " regioni superano 45.");
+    var g = svg.append("g");
+
+    R.responsive(host, function (W, phase) {
+      var H = Math.round(Math.min(W * 1.12, 640));
+      svg.attr("width", W).attr("height", H).attr("viewBox", "0 0 " + W + " " + H);
+      var proj = d3.geoMercator().fitExtent([[4, 4], [W - 4, H - 4]], geo);
+      var path = d3.geoPath(proj);
+      g.selectAll("*").remove();
+      var shapes = g.selectAll("path").data(geo.features).join("path")
+        .attr("d", path)
+        .style("fill", function (d) { return cls(byCode[d.properties.code].v).col; })
+        .style("stroke", "var(--bg)").style("stroke-width", 1)
+        .style("stroke-linejoin", "round")
+        .style("transition", "opacity 120ms")
+        .style("cursor", "pointer");
+      R.enter(shapes, phase,
+        function (s) { s.style("opacity", 0); },
+        function (s) { s.style("opacity", 1); }, 0);
+      shapes.each(function (d, i) { });
+      if (phase === "play") shapes.transition().delay(function (d, i) { return i * 25; }).duration(R.DUR * 0.6).style("opacity", 1);
+
+      clear = function () { shapes.style("opacity", 1); };
+      shapes.on("pointermove pointerdown", function (ev, d) {
+        var r = byCode[d.properties.code];
+        shapes.style("opacity", function (s) { return s === d ? 1 : 0.28; });
+        var pos = d3.pointer(ev, host);
+        tip.show(R.tipHTML({
+          title: r.name, value: f1(r.v), unit: "ogni 100 autorizzate",
+          rows: [["Italia", f1(italia.v)]],
+          note: r.group ? "Valore riferito a " + r.group + " insieme." : null
+        }), pos[0], pos[1]);
+      }).on("pointerleave", function (ev) { if (ev.pointerType === "mouse") { tip.hide(); clear(); } });
+    });
+  }).catch(function (e) { R.fail(document.getElementById("map"), e); });
+})();
+</script>
+</body>
+</html>

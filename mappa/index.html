@@ -10,21 +10,17 @@
 <link rel="stylesheet" href="../assets/radar.css">
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="../assets/radar.js"></script>
+<style>.scale{display:flex;flex-direction:column;gap:4px;width:min(100%,280px);margin:0 0 8px}.scale__bar{height:10px;border-radius:2px}.scale__lab{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}</style>
 </head>
 <body>
 <main class="radar">
   <header>
-    <h1 class="r-title">L'abusivismo edilizio resta un fatto del Sud</h1>
+    <h1 class="r-title">L'abusivismo edilizio in Italia</h1>
     <p class="r-sub">Abitazioni abusive ogni 100 autorizzate dai Comuni, per regione, 2022</p>
   </header>
 
-  <div class="r-big" id="big" aria-hidden="true">
-    <span class="r-big__num" id="big-num">&nbsp;</span>
-    <span class="r-big__label" id="big-label"></span>
-  </div>
-
   <figure class="r-chart" id="map">
-    <p class="r-chart__head">Costruzioni abusive per 100 autorizzate</p>
+    <p class="r-chart__head">Abitazioni abusive ogni 100 autorizzate</p>
     <div class="r-key" id="key" style="margin:0 0 6px"></div>
   </figure>
 
@@ -39,15 +35,6 @@
 <script>
 (function () {
   var R = Radar, fmt = R.fmt;
-  // classi: soglia superiore (esclusa), colore. L'ultima classe, la più grave, è l'unica in rosso.
-  var CLASSES = [
-    { max: 5,        col: "var(--blue-5)", lab: "meno di 5" },
-    { max: 15,       col: "var(--blue-4)", lab: "5–15" },
-    { max: 30,       col: "var(--blue-3)", lab: "15–30" },
-    { max: 45,       col: "var(--blue-2)", lab: "30–45" },
-    { max: Infinity, col: "var(--red)",    lab: "oltre 45" }
-  ];
-  function cls(v) { for (var i = 0; i < CLASSES.length; i++) if (v < CLASSES[i].max) return CLASSES[i]; }
   var f1 = function (v) { return fmt(v, 1); };
 
   Promise.all([R.loadCSV("../data/abusivismo-regioni.csv"), d3.json("../data/regioni-semplice.geojson")]).then(function (res) {
@@ -59,16 +46,9 @@
     var byCode = {}; regs.forEach(function (r) { byCode[r.code] = r; });
     var geo = res[1];
     var top = regs.slice().sort(function (a, b) { return b.v - a.v; });
-    var nHigh = regs.filter(function (r) { return r.v >= 45; }).length;
     var south = regs.filter(function (r) { return +r.code >= 15; });
     var minSouth = d3.min(south, function (r) { return r.v; });
     var maxNorth = d3.max(regs.filter(function (r) { return +r.code <= 8; }), function (r) { return r.v; });
-
-    // ---- Big number ----
-    var bigNum = d3.select("#big-num");
-    d3.select("#big-label").text("abitazioni abusive ogni 100 autorizzate in Italia: in Basilicata e Calabria sono " + fmt(top[0].v, 0) + ", nelle regioni del Nord non più di " + fmt(maxNorth, 1));
-    if (R.reduced) bigNum.text(f1(italia.v));
-    else { bigNum.text(f1(0)); R.onFirstView(document.getElementById("big"), function () { R.countUp(bigNum, italia.v, f1, "play"); }); }
 
     d3.select("#note").text("Valori di Piemonte e Valle d'Aosta, Trentino-Alto Adige e Friuli-Venezia Giulia, Umbria e Marche, Abruzzo e Molise, Basilicata e Calabria sono riferiti all'insieme delle due regioni. L'Istat ha interrotto l'aggiornamento dell'indicatore dopo il 2022.");
 
@@ -77,12 +57,22 @@
     var clear = function () {};
     R.dismissOutside(host, function () { tip.hide(); clear(); });
 
-    d3.select("#key").html(CLASSES.map(function (c) {
-      return '<span><i class="sw" style="background:' + c.col + '"></i>' + c.lab + "</span>";
-    }).join(""));
+    var vmin = d3.min(regs, function (r) { return r.v; }), vmax = d3.max(regs, function (r) { return r.v; });
+    var STEPS = ["--blue-5", "--blue-4", "--blue-3", "--blue-2", "--blue-1"];
+    var color;
+    function makeScale() {
+      var cs = getComputedStyle(document.documentElement);
+      var cols = STEPS.map(function (v) { return cs.getPropertyValue(v).trim(); });
+      var dom = STEPS.map(function (v, i) { return vmin + (vmax - vmin) * i / (STEPS.length - 1); });
+      color = d3.scaleLinear().domain(dom).range(cols).interpolate(d3.interpolateLab).clamp(true);
+      d3.select("#key").html('<div class="scale"><div class="scale__bar" style="background:linear-gradient(to right,' + cols.join(",") + ')"></div><div class="scale__lab"><span>' + f1(vmin) + '</span><span>' + f1(vmax) + '</span></div></div>');
+    }
+    makeScale();
+    new MutationObserver(function () { makeScale(); d3.selectAll("#map svg path").style("fill", function (d) { return color(byCode[d.properties.code].v); }); })
+      .observe(document.documentElement, { attributes: true });
 
     var svg = d3.select(host).append("svg").attr("role", "img");
-    svg.append("title").text("Mappa delle regioni italiane per abitazioni abusive ogni 100 autorizzate nel 2022. Il valore più alto è " + fmt(top[0].v, 1) + " in Basilicata e Calabria, il più basso " + fmt(d3.min(regs, function (r) { return r.v; }), 1) + " in Trentino-Alto Adige e Friuli-Venezia Giulia; " + nHigh + " regioni superano 45.");
+    svg.append("title").text("Mappa delle regioni italiane per abitazioni abusive ogni 100 autorizzate nel 2022. Il valore più alto è " + fmt(top[0].v, 1) + " in Basilicata e Calabria, il più basso " + fmt(d3.min(regs, function (r) { return r.v; }), 1) + " in Trentino-Alto Adige e Friuli-Venezia Giulia.");
     var g = svg.append("g");
 
     R.responsive(host, function (W, phase) {
@@ -93,7 +83,7 @@
       g.selectAll("*").remove();
       var shapes = g.selectAll("path").data(geo.features).join("path")
         .attr("d", path)
-        .style("fill", function (d) { return cls(byCode[d.properties.code].v).col; })
+        .style("fill", function (d) { return color(byCode[d.properties.code].v); })
         .style("stroke", "var(--bg)").style("stroke-width", 1)
         .style("stroke-linejoin", "round")
         .style("transition", "opacity 120ms")

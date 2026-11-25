@@ -1,12 +1,20 @@
-Anno;Titolo;Norma;Descrizione;Categoria
-1942;La prima legge urbanistica;Legge 1150/1942;Disciplina la pianificazione urbanistica e le licenze edilizie nei centri abitati.;Evoluzione normativa
-1967;La legge Ponte;Legge 765/1967 – Governo Moro III;Estende l'obbligo della licenza edilizia all'intero territorio comunale.;Evoluzione normativa
-1977;La legge Bucalossi;Legge 10/1977 – Governo Andreotti III;Introduce la concessione edilizia onerosa e rafforza le sanzioni contro gli abusi.;Evoluzione normativa
-1985;Il primo condono edilizio;Legge 47/1985 – Governo Craxi I;Consente di sanare, a determinate condizioni, le opere abusive ultimate entro il 1° ottobre 1983.;Condoni nazionali
-1994;Il secondo condono edilizio;Legge 724/1994, art. 39 – Governo Berlusconi I;Riguarda gli abusi ultimati entro il 31 dicembre 1993, con limiti volumetrici.;Condoni nazionali
-2001;Il Testo unico dell'edilizia;DPR 380/2001;Riordina la normativa, le sanzioni e le procedure ordinarie di accertamento di conformità.;Evoluzione normativa
-2003;Il terzo condono edilizio;DL 269/2003, art. 32 – Governo Berlusconi II;Riguarda gli abusi ultimati entro il 31 marzo 2003, con restrizioni per le aree vincolate.;Condoni nazionali
-2004;La Consulta e il ruolo delle Regioni;Sentenza 196/2004;Riconosce alle Regioni un ruolo nella definizione dei limiti del terzo condono.;Evoluzione normativa
-2017;La banca dati dell'abusivismo;Legge 205/2017 – Governo Gentiloni;Prevede una banca dati nazionale sull'abusivismo edilizio presso il MIT.;Evoluzione normativa
-2018;Il caso Ischia;DL 109/2018, art. 25 – Governo Conte I;Disciplina speciale per le domande pendenti relative agli immobili colpiti dal sisma del 2017.;Misure speciali
-2024;Il decreto Salva Casa;DL 69/2024 – Governo Meloni;Amplia le tolleranze e semplifica la regolarizzazione di alcune difformità. Non è un quarto condono generale.;Misure speciali
+Posizione;Periodo;Titolo;Norma;Descrizione;Categoria;Campania
+1942;1942;La prima legge urbanistica;Legge 1150/1942;Disciplina la pianificazione urbanistica e le licenze edilizie nei centri abitati.;Evoluzione normativa;no
+1967;1967;La legge Ponte;Legge 765/1967 – Governo Moro III;Estende l'obbligo della licenza edilizia all'intero territorio comunale.;Evoluzione normativa;no
+1977;1977;La legge Bucalossi;Legge 10/1977 – Governo Andreotti III;Introduce la concessione edilizia onerosa e rafforza le sanzioni contro gli abusi.;Evoluzione normativa;no
+1985;1985;Il primo condono edilizio;Legge 47/1985 – Governo Craxi I;Consente di sanare, a determinate condizioni, le opere abusive ultimate entro il 1° ottobre 1983.;Condoni nazionali;no
+1994;1994;Il secondo condono edilizio;Legge 724/1994, art. 39 – Governo Berlusconi I;Riguarda gli abusi ultimati entro il 31 dicembre 1993, con limiti volumetrici.;Condoni nazionali;no
+2001;2001;Il Testo unico dell'edilizia;DPR 380/2001;Riordina la normativa, le sanzioni e le procedure ordinarie di accertamento di conformità.;Evoluzione normativa;no
+2003;2003;Il terzo condono edilizio;DL 269/2003, art. 32 – Governo Berlusconi II;Riguarda gli abusi ultimati entro il 31 marzo 2003, con restrizioni per le aree vincolate.;Condoni nazionali;no
+2003.9;2003;La Campania dice no al terzo condono;Ricorso e delibera della giunta regionale – Presidente Bassolino;La Regione, contraria ai condoni, fa ricorso alla Corte costituzionale e dichiara il condono inapplicabile sul territorio campano. Chi voleva aderire resta nell'incertezza.;Evoluzione normativa;sì
+2004;2004;La Consulta e il ruolo delle Regioni;Sentenza 196/2004;Riconosce alle Regioni un ruolo nella definizione dei limiti del terzo condono. Stabilisce che la Campania non può rifiutarsi di applicare una legge dello Stato.;Evoluzione normativa;sì
+2004.8;2004;La Campania recepisce il condono, ma in modo restrittivo;Legge regionale della Campania;A ridosso della scadenza dei termini la Regione approva una legge di recepimento molto restrittiva. Seguono domande sospese o rifiutate e moltissimi ricorsi, mai del tutto risolti.;Evoluzione normativa;sì
+2017;2017;La banca dati dell'abusivismo;Legge 205/2017 – Governo Gentiloni;Prevede una banca dati nazionale sull'abusivismo edilizio presso il MIT.;Evoluzione normativa;no
+2018;2018;Il caso Ischia;DL 109/2018, art. 25 – Governo Conte I;Disciplina speciale per le domande pendenti relative agli immobili colpiti dal sisma del 2017.;Misure speciali;no
+2024;2024;Il decreto Salva Casa;DL 69/2024 – Governo Meloni;Amplia le tolleranze e semplifica la regolarizzazione di alcune difformità. Non è un quarto condono generale.;Misure speciali;no
+2025.85;novembre 2025;Il condono entra nella campagna elettorale campana;Emendamento alla legge di bilancio – Fratelli d'Italia;Una settimana prima delle regionali FdI propone di riaprire i termini del condono 2003. Il centrosinistra parla di voti comprati, vince le elezioni e l'emendamento viene ritirato.;Proposte in Parlamento;sì
+2026.05;gennaio 2026;Il Milleproroghe;Decreto Milleproroghe – FdI, Lega e Forza Italia;Tre emendamenti identici per riaprire i termini del condono 2003 vengono dichiarati inammissibili.;Proposte in Parlamento;no
+2026.4;maggio 2026;Il Piano casa;Emendamento di Annarita Patriarca (Forza Italia);La deputata campana propone di riaprire il condono 2003 con un emendamento al Piano casa. Anche questo salta.;Proposte in Parlamento;sì
+2026.88;novembre 2026;17 emendamenti alla legge di bilancio;Legge di bilancio in discussione alla Camera;FdI, Forza Italia e Lega presentano 17 emendamenti su misure riconducibili ai condoni, cinque per riaprire quello del 2003. Il primo è della campana Imma Vietri (FdI): alcuni allargano la sanatoria agli abusi in aree vincolate.;Proposte in Parlamento;sì
+2026.9;novembre 2026;Un fondo per gli arretrati dei comuni;Emendamenti di PD, Alleanza Verdi e Sinistra e M5S;Propongono 100 milioni l'anno per tre anni per personale e digitalizzazione degli archivi, così da esaminare le domande dei tre condoni mai valutate.;Proposte in Parlamento;no
+2026.92;novembre 2026;La proposta Salvini: silenzio-assenso;Proposta della Lega;I comuni avrebbero 180 giorni per esaminare le domande inevase: oltre il termine, la domanda si intende accolta. Fratelli d'Italia e Forza Italia si dicono contrari.;Proposte in Parlamento;no

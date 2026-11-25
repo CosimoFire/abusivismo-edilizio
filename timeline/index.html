@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Il mattone perdonato – Radar QN</title>
+<title>La storia dei condoni edilizi – Radar QN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,700&display=swap">
@@ -44,8 +44,7 @@
 <body>
 <main class="radar">
   <header>
-    <h1 class="r-title">Il mattone perdonato</h1>
-    <p class="r-sub">La storia dei condoni edilizi in Italia, 1942-2026</p>
+    <h1 class="r-title">La storia dei condoni edilizi</h1>
   </header>
 
   <div class="tl-filters" id="filters" role="group" aria-label="Filtra per tipo di norma"></div>
@@ -106,14 +105,14 @@
       .style("--c", function (d) { return col[d.c]; })
       .style("--lag", function (d, i) { return i * 60 + "ms"; })
       .html(function (d) {
-        return '<div class="tl-year">' + d.y + (d.camp ? '<span class="tl-tag">Campania</span>' : "") + '</div><h2 class="tl-t">' + d.t + '</h2><div class="tl-n">' + d.n + '</div><p class="tl-d">' + d.d + "</p>";
+        return '<div class="tl-year">' + d.y + (d.camp ? '<span class="tl-tag">Campania</span>' : "") + '</div><h2 class="tl-t">' + d.t + '</h2>' + (d.n ? '<div class="tl-n">' + d.n + '</div>' : "") + '<p class="tl-d">' + d.d + "</p>";
       })
       .on("click", function (ev, d) { toggle(d); })
       .on("keydown", function (ev, d) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggle(d); } });
 
     var host = document.getElementById("strip");
     var svg = d3.select(host).append("svg").attr("role", "img")
-      .attr("aria-label", "Linea del tempo dal 1942 al 2026 con " + data.length + " norme: tre condoni nazionali (1985, 1994, 2003), due misure speciali, interventi di riordino e, dal 2025, sei proposte in Parlamento.");
+      .attr("aria-label", "Linea del tempo dal 1942 al 2026 con " + data.length + " norme: tre condoni nazionali (1985, 1994, 2003), due misure speciali, interventi di riordino e, dal 2025, tre proposte in Parlamento.");
     R.responsive(host, function (W, phase) {
       var narrow = R.isNarrow(W), m = { l: 8, r: 8 }, STEP = 12;
       var x = d3.scaleLinear().domain([1942, 2027]).range([m.l, W - m.r]);
